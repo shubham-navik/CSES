@@ -10,18 +10,17 @@ void solve() {
     }
 
     int total = accumulate(v.begin(), v.end(), 0);
-    vector<bool> dp(total + 1, false);  // DP array to track reachable sums
-    dp[0] = true;  // Sum 0 is always achievable (by taking no elements)
+    vector<bool> dp(total + 1, false);  
+    dp[0] = true;  
 
-    // Process each number in the vector
+   
     for (int num : v) {
-        // Update reachable sums in reverse to avoid reuse within the same loop
+       
         for (int j = total; j >= num; j--) {
             dp[j] = dp[j] || dp[j - num];
         }
     }
 
-    // Collect all reachable sums from 1 to total
     vector<int> ans;
     for (int i = 1; i <= total; i++) {
         if (dp[i]) {
@@ -29,7 +28,6 @@ void solve() {
         }
     }
 
-    // Output the result
     cout << ans.size() << endl;
     for (int num : ans) {
         cout << num << " ";
