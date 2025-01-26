@@ -1,92 +1,80 @@
 #include <bits/stdc++.h>
 using namespace std;
- 
+
 typedef long long ll;
- 
-// Function to calculate the area of the polygon formed by a point and polygon edges
-ll calculateArea(vector<pair<ll, ll>>& polygon, pair<ll, ll> point) {
-    ll area = 0;
+
+// Function to check if a point lies on the boundary of a polygon
+bool check(const vector<pair<ll, ll>>& polygon, pair<ll, ll> p) {
     int n = polygon.size();
     for (int i = 0; i < n; i++) {
-        pair<ll, ll> p1 = polygon[i];
-        pair<ll, ll> p2 = polygon[(i + 1) % n];
-        area += abs((point.first * p1.second - p1.first * point.second) +
-                    (p1.first * p2.second - p2.first * p1.second) +
-                    (p2.first * point.second - point.first * p2.second));
+        ll x1 = polygon[i].first, y1 = polygon[i].second;
+        ll x2 = polygon[(i + 1) % n].first, y2 = polygon[(i + 1) % n].second;
+        ll x3 = p.first, y3 = p.second;
+
+        ll crossProduct = (y2 - y1) * (x3 - x1) - (x2 - x1) * (y3 - y1);
+        ll dotProduct = (x3 - x1) * (x2 - x1) + (y3 - y1) * (y2 - y1);
+        ll squaredLength = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+
+        if (crossProduct == 0 && dotProduct >= 0 && dotProduct <= squaredLength) {
+            return true; // Point lies on the boundary
+        }
     }
-    return area;
+    return false;
 }
- 
-// Function to calculate the area of the polygon itself
-// ll polygonArea(vector<pair<ll, ll>>& polygon) {
-//     ll area = 0;
-//     int n = polygon.size();
-//     for (int i = 0; i < n; i++) {
-//         pair<ll, ll> p1 = polygon[i];
-//         pair<ll, ll> p2 = polygon[(i + 1) % n];
-//         area += (p1.first * p2.second - p2.first * p1.second);
-//     }
-//     return abs(area);
-// }
- 
-bool check(vector<pair<ll,ll>>polygon,pair<ll,ll>p){
- 
-    polygon.push_back(polygon[0]);
- 
-    for (int i = 0; i < polygon.size() - 1;i++){
-        ll x3 = p.first;
-        ll y3 = p.second;
-        ll x1 = polygon[i].first;
-        ll y1 = polygon[i].second;
-        ll x2 = polygon[i+1].first;
-        ll y2 = polygon[i+1].second;
-        ll f = (y2 - y1) * x3 - (x2 - x1) * y3 + y1 * (x2 - x1) - x1 * (y2 - y1);
- 
-        if(f==0)
-            return true;
+
+// Function to check if a point is inside the polygon using the ray-casting algorithm
+string fun(const vector<pair<ll, ll>>& polygon, pair<ll, ll> p) {
+    int n = polygon.size();
+    ll x = p.first, y = p.second;
+    int cnt = 0;
+
+    for (int i = 0; i < n; i++) {
+        ll x1 = polygon[i].first, y1 = polygon[i].second;
+        ll x2 = polygon[(i + 1) % n].first, y2 = polygon[(i + 1) % n].second;
+
+        // Check if the ray crosses the edge
+        if (y1 > y2) {
+            swap(x1, x2);
+            swap(y1, y2);
+        }
+
+        if (y > y1 && y <= y2 && (x2 - x1) * (y - y1) > (x - x1) * (y2 - y1)) {
+            cnt++;
+        }
     }
- 
-        polygon.pop_back();
-        return false;
+
+    return (cnt % 2 == 1) ? "INSIDE\n" : "OUTSIDE\n";
 }
- 
+
 int main() {
     int n, m;
     cin >> n >> m;
- 
+
     vector<pair<ll, ll>> polygon(n);
     vector<pair<ll, ll>> points(m);
- 
+
     // Input polygon vertices
     for (int i = 0; i < n; i++) {
         ll x, y;
         cin >> x >> y;
         polygon[i] = {x, y};
     }
- 
+
     // Input points to check
     for (int i = 0; i < m; i++) {
         ll x, y;
         cin >> x >> y;
         points[i] = {x, y};
     }
- 
-    // Calculate the original polygon area
-    ll originalArea = calculateArea(polygon, polygon[0]);
- 
+
     // Check each point
     for (int i = 0; i < m; i++) {
-        ll extendedArea = calculateArea(polygon, points[i]);
- 
-        if (extendedArea == originalArea) {
-            if(check(polygon,points[i])){
-                cout << "BOUNDARY\n";
-            }else
-            cout << "INSIDE\n";
+        if (check(polygon, points[i])) {
+            cout << "BOUNDARY\n";
         } else {
-            cout << "OUTSIDE\n";
+            cout << fun(polygon, points[i]);
         }
     }
- 
+
     return 0;
 }
