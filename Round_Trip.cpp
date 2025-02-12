@@ -1,75 +1,75 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
 
 typedef long long ll;
+unordered_map<ll, vector<ll>> g;
+vector<ll> parent;
+vector<bool> vis;
+bool cf = false; // Global flag to stop DFS after finding one cyc
 
-void trace(vector<ll>&parent, ll st,vector<ll>&rout){
-
-    ll temp = st;
-    while(parent[temp]!= st){
-        rout.push_back(temp);
-        temp = parent[temp];
+void solve(int src, int end) {
+    vector<int> cyc;
+    cyc.push_back(end);
+    while (src != end) {
+        cyc.push_back(src);
+        src = parent[src];
     }
-    rout.push_back(st);
+    cyc.push_back(end); // Complete the cyc
+    reverse(cyc.begin(), cyc.end()); // To print in correct order
+    
+    cout <<cyc.size()<< "\n";
+    for (int node : cyc) {
+        cout << node << " ";
+    }
+    cout << endl;
 }
 
-bool dfs(ll src,unordered_map<ll, vector<ll>>& g,vector<bool>& vis,vector<ll>& parent){
-        if(vis[src] && parent[src] != src){
-            vector<ll> rout;
-            trace(parent, src,rout);
-            if(rout.size()>2){
-                cout << rout.size() << "\n";
-                for(auto r:rout){
-                    cout << r << " ";
-                }
-                return;
-            }else{
-                cout << "IMPOSSIBLE\n";
-                return;
-            }
+void check(int src) {
+    if (cf) return; // Stop DFS if cyc is already found
+
+    vis[src] = true;
+
+    for (ll nbr : g[src]) {
+        if (cf) return; // Stop further execution if a cyc is found
+        
+        if (vis[nbr] && parent[src] != nbr) { // cyc detected
+            solve(src, nbr);
+            cf = true; // Set flag to stop further recursion
+            return;
         }
 
-        if(vis[src])
-            return;
-    vis[src] = 1;
-
-    for(auto nbr : g[src]){
-        // if(vis[nbr] && parent[nbr] != src){
-        //     vector<ll> rout;
-        //     trace(parent, nbr,rout);
-        //     if(rout.size()>2){
-        //         cout << rout.size() << "\n";
-        //         for(auto r:rout){
-        //             cout << r << " ";
-        //         }
-        //         return;
-        //     }else{
-        //         cout << "IMPOSSIBLE\n";
-        //         return;
-        //     }
-        // }else{
-            // vis[src] = 1;
+        if (!vis[nbr]) {
             parent[nbr] = src;
-            dfs(nbr, g, vis, parent);
-        // }
+            check(nbr);
+        }
     }
-
 }
 
-int main(){
-    ll n,m;cin>>n>>m;
-    unordered_map<ll, vector<ll>> g;
-    for (int i = 0; i < m;i++){
+int main() {
+    ll n, m;
+    cin >> n >> m;
+
+    g.clear();
+    parent.assign(n + 1, -1);
+    vis.assign(n + 1, false);
+    cf = false;
+
+    for (int i = 0; i < m; i++) {
         ll a, b;
         cin >> a >> b;
         g[a].push_back(b);
         g[b].push_back(a);
     }
 
-    vector<bool> vis(n + 1, 0);
-    vector<ll> parent(n + 1, -1);
+    for (ll i = 1; i <= n; i++) { // Handle disconnected components
+        if (!vis[i]) {
+            check(i);
+            if (cf) break; // Stop searching if a cyc is found
+        }
+    }
 
-   bool check =  dfs(1, g, vis, parent);
+    if (!cf)
+        cout << "IMPOSSIBLE\n";
 
     return 0;
 }
